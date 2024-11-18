@@ -7,6 +7,7 @@ use crate::TokenKind::*;
 use crate::{Token, TokenKind};
 
 struct Scanner<'src> {
+    text: &'src str,
     source: Chars<'src>,
     length: u32,
     char_index: u32,
@@ -60,7 +61,7 @@ impl Scanner<'_> {
             },
             // Numeric literal.
             '0'..='9' => TokenKind::Literal {
-                kind: crate::LiteralKind::Float,
+                kind: crate::Literal::Float,
             },
             '"' => {
                 self.eat_while(|ch| ch != '"');
@@ -68,7 +69,7 @@ impl Scanner<'_> {
                 let terminated = self.peek() == '"';
 
                 let lit = Literal {
-                    kind: crate::LiteralKind::Str { terminated },
+                    kind: crate::Literal::Str { terminated },
                 };
 
                 if terminated {
@@ -76,6 +77,27 @@ impl Scanner<'_> {
                 }
 
                 lit
+            }
+            c if is_identifier(c) => {
+                self.eat_while(|c| is_identifier(c) || c.is_numeric() );
+
+                // todo common func
+                let end = self.length - self.source.as_str().len() as u32;
+
+                let ident_text = &self.text[start as usize..end as usize];
+
+                match ident_text {
+                    "let" => TokenKind::Let,
+                    "if" => TokenKind::If,
+                    "else" => TokenKind::Else,
+                    "for" => TokenKind::For,
+                    "fun" => TokenKind::Fun,
+                    "return" => TokenKind::Return,
+                    "true" => TokenKind::True,
+                    "false" => TokenKind::False,
+                    "while" => TokenKind::While,
+                    _ => TokenKind::Ident
+                }
             }
             _ => Unknown,
         };
@@ -115,6 +137,7 @@ impl Scanner<'_> {
 
 pub fn scan(src: &str) -> impl Iterator<Item = Token> + '_ {
     let mut scanner = Scanner {
+        text: src,
         source: src.chars(),
         char_index: 0,
         length: src.len() as u32,
@@ -153,4 +176,9 @@ fn is_whitespace(c: char) -> bool {
         | '\u{2028}' // LINE SEPARATOR
         | '\u{2029}' // PARAGRAPH SEPARATOR
     )
+}
+
+fn is_identifier(c: char) -> bool {
+    // TODO: Use xid_unicode
+    c.is_alphabetic() || c == '_'
 }

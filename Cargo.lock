@@ -29,6 +29,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "propane_parser"
+version = "0.1.0"
+dependencies = [
+ "codespan",
+ "propane_lexer",
+]
+
+[[package]]
 name = "propanec"
 version = "0.1.0"
 dependencies = [

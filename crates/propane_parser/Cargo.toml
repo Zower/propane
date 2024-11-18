@@ -1,0 +1,8 @@
+[package]
+name = "propane_parser"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+codespan = "0.11.1"
+propane_lexer = { path = "../propane_lexer" }

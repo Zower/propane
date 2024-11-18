@@ -26,19 +26,31 @@ pub enum TokenKind {
     /// Any whitespace character sequence.
     Whitespace,
 
-    /// "ident"
+    /// A user defined identifer
     Ident,
 
     /// Like the above, but containing invalid unicode codepoints.
     InvalidIdent,
 
+    // Keywords:
+    Let,
+    If,
+    Else,
+    For,
+    Fun,
+    Return,
+    True,
+    False,
+    While,
+
+
     /// Examples: `12u8`, `1.0e-40`, `b"123"`. Note that `_` is an invalid
     /// suffix, but may be present here on string and float literals. Users of
     /// this type will need to check for and reject that case.
     ///
-    /// See [LiteralKind] for more details.
+    /// See [Literal] for more details.
     Literal {
-        kind: LiteralKind,
+        kind: Literal,
     },
 
     // Two-char tokens:
@@ -117,7 +129,7 @@ pub enum TokenKind {
 /// type as `Int`. (Compare against `rustc_ast::token::LitKind` and
 /// `rustc_ast::ast::LitKind`).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum LiteralKind {
+pub enum Literal {
     /// "12_u8", "0o100", "0b120i99", "1f32".
     // Int { base: Base, empty_int: bool },
     Int,
@@ -149,6 +161,7 @@ mod tests {
 // this is a comment
 (( )){} // grouping stuff
 !*+-/=<> <= == // operators
+let x = 3;
         "#,
         );
 
