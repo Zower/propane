@@ -1,80 +1,159 @@
-use std::iter;
-
-use propane_lexer::Token;
-use crate::expression::Expression;
+use propane_lexer::{Token, TokenKind};
+use crate::expression::{Expression, Literal, Operator};
 
 struct Parser<'src> {
     tokens: &'src [Token],
-    length: u32,
-    char_index: u32,
+    src: &'src str,
+    current: usize,
 }
 
 impl Parser<'_> {
+    fn parse(&mut self) -> Expression {
+        self.expression()
+    }
 
-    // fn match_advance_or(&mut self, ch: char, is: TokenKind, or: TokenKind) -> TokenKind {
-    //     if self.peek() == ch {
-    //         self.discard();
-    //         is
-    //     } else {
-    //         or
-    //     }
-    // }
-    //
-    // fn peek(&self) -> char {
-    //     self.source.clone().next().unwrap_or('\0')
-    // }
-    //
-    // fn discard(&mut self) {
-    //     self.source.next();
-    // }
-    //
-    // pub(crate) fn eat_while(&mut self, mut predicate: impl FnMut(char) -> bool) {
-    //     while predicate(self.peek()) && self.peek() != '\0' {
-    //         self.discard();
-    //     }
-    // }
+    fn is_at_end(&self) -> bool {
+        self.current >= self.tokens.len()
+    }
+
+    fn peek(&self) -> &Token {
+        &self.tokens[self.current]
+    }
+
+    fn previous(&self) -> &Token {
+        &self.tokens[self.current - 1]
+    }
+
+    fn advance(&mut self) -> &Token {
+        if !self.is_at_end() {
+            self.current += 1;
+        }
+
+        self.previous()
+    }
+
+    fn match_token(&mut self, kinds: &[TokenKind]) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+
+        if kinds.contains(&self.peek().kind) {
+            self.current += 1;
+
+            true
+        } else {
+            false
+        }
+    }
+
+    fn expression(&mut self) -> Expression {
+        self.equality()
+    }
+
+    fn equality(&mut self) -> Expression {
+        let mut expr = self.comparison();
+
+        while self.match_token(&[TokenKind::BangEq, TokenKind::EqEq]) {
+            let operator = Operator::from_token(self.previous().kind).unwrap();
+
+            let right = self.comparison();
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            };
+        }
+
+        expr
+    }
+
+    fn comparison(&mut self) -> Expression {
+        let mut expr = self.term();
+
+        while self.match_token(&[TokenKind::Gt, TokenKind::GtEq, TokenKind::Lt, TokenKind::LtEq]) {
+            let operator = Operator::from_token(self.previous().kind).unwrap();
+
+            let right = self.term();
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            };
+        }
+
+        expr
+    }
+
+    fn term(&mut self) -> Expression {
+        let mut expr = self.factor();
+
+        while self.match_token(&[TokenKind::Minus, TokenKind::Plus]) {
+            let operator = Operator::from_token(self.previous().kind).unwrap();
+
+            let right = self.factor();
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            };
+        }
+
+        expr
+    }
+
+    fn factor(&mut self) -> Expression {
+        let mut expr = self.unary();
+
+        while self.match_token(&[TokenKind::Slash, TokenKind::Star]) {
+            let operator = Operator::from_token(self.previous().kind).unwrap();
+
+            let right = self.unary();
+            expr = Expression::Binary {
+                left: Box::new(expr),
+                operator,
+                right: Box::new(right),
+            };
+        }
+
+        expr
+    }
+
+    fn unary(&mut self) -> Expression {
+        if self.match_token(&[TokenKind::Bang, TokenKind::Minus]) {
+            let operator = Operator::from_token(self.previous().kind).unwrap();
+
+            let right = self.unary();
+            Expression::Unary(operator, Box::new(right))
+        } else {
+            self.primary()
+        }
+    }
+
+    fn primary(&mut self) -> Expression {
+        if let Token { kind: TokenKind::Literal { kind }, span } = *self.peek() {
+            self.advance();
+
+            Expression::Literal(Literal::from_token_literal(kind, &self.src[span.start().0 as usize..span.end().0 as usize]))
+        } else if self.match_token(&[TokenKind::OpenParen]) {
+            let expr = self.expression();
+            if !self.match_token(&[TokenKind::CloseParen]) {
+                panic!("Expected ')' after expression.");
+            }
+
+            Expression::Grouping(Box::new(expr))
+        } else {
+            dbg!(self.peek());
+            panic!("Expected expression.");
+        }
+    }
 }
 
-pub fn parse(src: &[Token]) -> Expression {
+pub fn parse(src: &str, tokens: &[Token]) -> Expression {
     let mut parser = Parser {
-        tokens: src,
-        char_index: 0,
-        length: src.len() as u32,
+        tokens,
+        src,
+        current: 0,
     };
 
     parser.parse()
-}
-
-fn is_whitespace(c: char) -> bool {
-    // This is Pattern_White_Space.
-    //
-    // Note that this set is stable (ie, it doesn't change with different
-    // Unicode versions), so it's ok to just hard-code the values.
-
-    matches!(
-        c,
-        // Usual ASCII suspects
-        '\u{0009}'   // \t
-        | '\u{000A}' // \n
-        | '\u{000B}' // vertical tab
-        | '\u{000C}' // form feed
-        | '\u{000D}' // \r
-        | '\u{0020}' // space
-
-        // NEXT LINE from latin1
-        | '\u{0085}'
-
-        // Bidi markers
-        | '\u{200E}' // LEFT-TO-RIGHT MARK
-        | '\u{200F}' // RIGHT-TO-LEFT MARK
-
-        // Dedicated whitespace characters from Unicode
-        | '\u{2028}' // LINE SEPARATOR
-        | '\u{2029}' // PARAGRAPH SEPARATOR
-    )
-}
-
-fn is_identifier(c: char) -> bool {
-    // TODO: Use xid_unicode
-    c.is_alphabetic() || c == '_'
 }

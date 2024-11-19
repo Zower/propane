@@ -7,11 +7,11 @@ pub fn tokenize(src: &str) -> Vec<Token> {
 
 #[derive(Debug)]
 pub struct Token {
-    kind: TokenKind,
-    span: Span,
+    pub kind: TokenKind,
+    pub span: Span,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TokenKind {
     // Multi-char tokens:
     /// "// comment"
@@ -39,8 +39,6 @@ pub enum TokenKind {
     For,
     Fun,
     Return,
-    True,
-    False,
     While,
 
 
@@ -136,6 +134,7 @@ pub enum Literal {
     /// "12.34f32", "1e3", but not "1f32".
     // Float { base: Base, empty_exponent: bool },
     Float,
+    Bool,
     /// "'a'", "'\\'", "'''", "';"
     Char { terminated: bool },
     // /// "b'a'", "b'\\'", "b'''", "b';"

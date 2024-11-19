@@ -93,8 +93,7 @@ impl Scanner<'_> {
                     "for" => TokenKind::For,
                     "fun" => TokenKind::Fun,
                     "return" => TokenKind::Return,
-                    "true" => TokenKind::True,
-                    "false" => TokenKind::False,
+                    "true" | "false" => TokenKind::Literal { kind: crate::Literal::Bool },
                     "while" => TokenKind::While,
                     _ => TokenKind::Ident
                 }
