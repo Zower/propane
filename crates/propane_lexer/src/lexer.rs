@@ -4,7 +4,7 @@ use std::str::Chars;
 use codespan::Span;
 
 use crate::TokenKind::*;
-use crate::{Token, TokenKind};
+use crate::{LexerToken, Token, TokenKind};
 
 struct Scanner<'src> {
     text: &'src str,
@@ -14,7 +14,7 @@ struct Scanner<'src> {
 }
 
 impl Scanner<'_> {
-    fn next_token(&mut self) -> Option<Token> {
+    fn next_token(&mut self) -> Option<LexerToken> {
         let char = self.source.next()?;
 
         let start = self.char_index;
@@ -88,13 +88,13 @@ impl Scanner<'_> {
 
                 match ident_text {
                     "let" => TokenKind::Let,
-                    "if" => TokenKind::If,
-                    "else" => TokenKind::Else,
-                    "for" => TokenKind::For,
+                    // "if" => TokenKind::If,
+                    // "else" => TokenKind::Else,
+                    // "for" => TokenKind::For,
                     "fun" => TokenKind::Fun,
-                    "return" => TokenKind::Return,
+                    // "return" => TokenKind::Return,
                     "true" | "false" => TokenKind::Literal { kind: crate::Literal::Bool },
-                    "while" => TokenKind::While,
+                    // "while" => TokenKind::While,
                     _ => TokenKind::Ident
                 }
             }
@@ -134,7 +134,7 @@ impl Scanner<'_> {
     }
 }
 
-pub fn scan(src: &str) -> impl Iterator<Item = Token> + '_ {
+pub fn scan(src: &str) -> impl Iterator<Item = LexerToken> + '_ {
     let mut scanner = Scanner {
         text: src,
         source: src.chars(),

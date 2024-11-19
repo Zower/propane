@@ -1,4 +1,4 @@
-use propane_lexer::{TokenKind};
+use crate::TokenKind;
 
 pub enum Expression {
     Binary {
@@ -9,6 +9,19 @@ pub enum Expression {
     Grouping(Box<Expression>),
     Literal(Literal),
     Unary(Operator, Box<Expression>),
+}
+
+pub enum Statement {
+    Let {
+        name: String,
+        value: Expression,
+    }
+}
+
+pub enum Node {
+    Expression(Expression),
+    Statement(Statement),
+    Program(Vec<Statement>),
 }
 
 pub enum Operator {
