@@ -1,15 +1,18 @@
 use codespan::Span;
 
-mod scanner;
-pub fn tokenize(src: &str) -> Vec<Token> {
+mod lexer;
+
+pub fn tokenize(src: &str) -> Vec<LexerToken> {
     scanner::scan(&src).collect()
 }
 
 #[derive(Debug)]
-pub struct Token {
-    pub kind: TokenKind,
+pub struct Token<TK> {
+    pub kind: TK,
     pub span: Span,
 }
+
+pub type LexerToken = Token<TokenKind>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TokenKind {

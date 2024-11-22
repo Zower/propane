@@ -1,5 +1,5 @@
 use propane_lexer::{Token };
-use crate::expression::{Expression, Literal, Operator};
+use crate::expression::{Expression, Literal, Operator, Statement};
 use crate::{ParserToken, TokenKind};
 
 struct Parser<'src> {
@@ -10,7 +10,25 @@ struct Parser<'src> {
 
 impl Parser<'_> {
     fn parse(&mut self) -> Expression {
-        self.expression()
+        loop {
+            let token = self.tokens.get(self.current).unwrap();
+
+            if token.kind == TokenKind::Eof {
+                break;
+            }
+
+
+            Self::parseStatement()
+
+            // self.current += 1;
+        }
+
+        todo!()
+        // self.expression()
+    }
+
+    fn parseStatement(tokens: &[ParserToken], current: &mut usize) -> Option<Statement> {
+
     }
 //     fn parse(&mut self) -> Expression {
 //         self.expression()
