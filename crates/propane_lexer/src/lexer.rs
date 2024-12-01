@@ -46,6 +46,7 @@ impl Scanner<'_> {
             '*' => Star,
             '^' => Caret,
             '%' => Percent,
+            ';' => Semi,
             '!' => self.match_advance_or('=', BangEq, Bang),
             '=' => self.match_advance_or('=', EqEq, Eq),
             '<' => self.match_advance_or('=', LtEq, Lt),
@@ -91,8 +92,8 @@ impl Scanner<'_> {
                     // "if" => TokenKind::If,
                     // "else" => TokenKind::Else,
                     // "for" => TokenKind::For,
-                    "fun" => TokenKind::Fun,
-                    // "return" => TokenKind::Return,
+                    "fun" => Fun,
+                    "return" => Return,
                     "true" | "false" => TokenKind::Literal { kind: crate::Literal::Bool },
                     // "while" => TokenKind::While,
                     _ => TokenKind::Ident

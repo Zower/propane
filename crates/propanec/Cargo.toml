@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 propane_lexer = { path = "../propane_lexer" }
+propane_parser = { path = "../propane_parser" }
+codespan.workspace = true
+codespan-reporting.workspace = true

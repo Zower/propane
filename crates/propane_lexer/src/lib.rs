@@ -3,10 +3,10 @@ use codespan::Span;
 mod lexer;
 
 pub fn tokenize(src: &str) -> Vec<LexerToken> {
-    scanner::scan(&src).collect()
+    lexer::scan(&src).collect()
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Token<TK> {
     pub kind: TK,
     pub span: Span,

@@ -1,5 +1,6 @@
 use crate::TokenKind;
 
+#[derive(Debug)]
 pub enum Expression {
     Binary {
         left: Box<Expression>,
@@ -9,12 +10,17 @@ pub enum Expression {
     Grouping(Box<Expression>),
     Literal(Literal),
     Unary(Operator, Box<Expression>),
+    StmtExpr(Vec<Statement>)
 }
 
+#[derive(Debug)]
 pub enum Statement {
     Let {
         name: String,
         value: Expression,
+    },
+    Return {
+        value: Expression
     }
 }
 
@@ -24,6 +30,7 @@ pub enum Node {
     Program(Vec<Statement>),
 }
 
+#[derive(Debug)]
 pub enum Operator {
     NotEq,
     EqEq,
