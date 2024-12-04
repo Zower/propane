@@ -45,7 +45,9 @@ impl Parser<'_> {
             TokenKind::Return => {
                 self.parse_return_statement()
             }
-            _ => panic!("{:?}", self.current_token())
+            _ => {
+                self.parse_expression_statement()
+            }
         }
     }
 
@@ -68,6 +70,14 @@ impl Parser<'_> {
     }
 
     fn parse_return_statement(&mut self) -> Option<Statement> {
+        if !self.skip_expression_to_semi_temp() {
+            return None;
+        }
+
+        Some(Statement::Return { value: Expression::Literal(Literal::Int(1)) } )
+    }
+
+    fn parse_expression_statement(&mut self) -> Option<Statement> {
         if !self.skip_expression_to_semi_temp() {
             return None;
         }
